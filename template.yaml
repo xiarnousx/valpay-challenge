@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AWS Template that creates dynmodb table, webhooks through lambda functions
+
+Parameters:
+  Environment:
+    Description: Environment name this template to be deployed to
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - stage
+      - prod
+
+Resources:
+  
+  TransactionAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: api
+      TracingEnabled: true
+      OpenApiVersion: 3.0.2
+
+  TransactionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "Transactions_${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: transactionId
+          AttributeType: S
+        - AttributeName: merchantId
+          AttributeType: S
+        - AttributeName: transactionDate
+          AttributeType: N
+      KeySchema:
+        - AttributeName: merchantId 
+          KeyType: HASH
+        - AttributeName: transactionId
+          KeyType: RANGE
+      LocalSecondaryIndexes:
+        - IndexName: ReportIndex
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+            - AttributeName: merchantId
+              KeyType: HASH
+            - AttributeName: transactionDate
+              KeyType: RANGE
+  
+  FunctionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "ExecutionRole_${Environment}"
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+    
+  TransactionNotificationFun:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "TransactionNotificationFun_${Environment}"
+      Description: Transaction Notification webhook
+      Role: !GetAtt FunctionsRole.Arn
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ./functions/TransactionNotification/src
+      Environment:
+        Variables:
+          TABLE: !Ref TransactionsTable
+          ENV: !Ref Environment
+      Events:
+        transactionNotificationWebHook:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionAPI
+            Path: /tnx
+            Method: POST
+  
+  PayoutNotificationFun:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "PayoutNotificationFun_${Environment}"
+      Description: Payout Notification webhook
+      Role: !GetAtt FunctionsRole.Arn
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ./functions/PayoutNotification/src
+      Environment:
+        Variables:
+          TABLE: !Ref TransactionsTable
+          ENV: !Ref Environment
+      Events:
+        PayoutNotificationWebHook:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionAPI
+            Path: /pay
+            Method: POST
+  
+  ReportFun:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "ReportFun_${Environment}"
+      Description: Transaction Report Function
+      Role: !GetAtt FunctionsRole.Arn
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ./functions/Reports/src
+      Environment:
+        Variables:
+          TABLE: !Ref TransactionsTable
+          ENV: !Ref Environment
+          QUERY_INDEX: ReportIndex
+      Events:
+        PayoutNotificationWebHook:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionAPI
+            Path: /report
+            Method: GET
+
+
+Outputs:
+  APIGateway:
+    Description: Api Gateway
+    Value: !Ref TransactionAPI
+    
+  TableName:
+    Description: Transaction table name per environment
+    Value: !Ref TransactionsTable
+
+

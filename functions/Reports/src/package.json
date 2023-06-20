@@ -1,0 +1,7 @@
+{
+    "type": "module",
+    "dependencies": {
+        "aws-sdk": "^2.1399.0",
+        "csvjson": "^5.1.0"
+    }
+}
