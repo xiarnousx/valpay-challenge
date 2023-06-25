@@ -60,5 +60,4 @@ The Architecture is depicted by the below diagram:
 ## Limitations:
 
 - AuthZ/AuthN not implemented possible solution **AWS Cognito** service
-- Validation to be implemented, althoug stubs are created
-- Error Handling to be implemented.
+- SNS Notification on third party collection service failure not implemented, although stubs are there.
