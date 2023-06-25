@@ -2,7 +2,7 @@
     "body": {
       "merchantId": "mer1234",
       "transactionId": "tnx12345",
-      "type": "auth"
+      "type": "authz"
     },
     "resource": "/{proxy+}",
     "path": "/path/to/resource",

@@ -29,6 +29,7 @@ export const handler = async function(event, context) {
       
    } catch(err) {
       const errorHandler = getErrorHandler(err);
-      errorHandler.handle(payload);
+      const errorResult = errorHandler.handle(payload);
+      return errorResult;
    }
 }

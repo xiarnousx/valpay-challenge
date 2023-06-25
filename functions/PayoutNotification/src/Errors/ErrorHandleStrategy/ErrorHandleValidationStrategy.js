@@ -5,6 +5,10 @@ export class ErrorHandleValidationStrategy
     }
 
     handle(notification) {
-        console.log(this.error);
+        return {
+            statusCode: this.error.statusCode,
+            statusText: this.error.statusText,
+            error: this.error.message,
+        }
     }
 }

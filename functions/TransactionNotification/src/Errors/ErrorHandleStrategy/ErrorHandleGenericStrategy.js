@@ -5,6 +5,10 @@ export class ErrorHandleGenericStrategy
     }
 
     handle(notification) {
-        console.log(this.error);
+        return {
+            statusCode: 500,
+            statusText: 'server side error',
+            error: this.error.message,
+        }
     }
 }

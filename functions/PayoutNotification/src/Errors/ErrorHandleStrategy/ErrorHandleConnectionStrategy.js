@@ -5,6 +5,12 @@ export class ErrorHandleConnectionStrategy
     }
     
     handle(notification) {
-        console.log(this.error);
+        //1) base64 encode notificat message
+        //2) publish to sns topic notification message
+        return {
+            statusCode: this.error.statusCode,
+            statusText: this.error.statusText,
+            error: this.error.message,
+        }
     }
 }

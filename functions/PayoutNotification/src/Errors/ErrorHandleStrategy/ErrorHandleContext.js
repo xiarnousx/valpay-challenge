@@ -5,6 +5,6 @@ export class ErrorHandleContext
     }
 
     handle(notification){
-        this.strategy.handle(notification);
+        return this.strategy.handle(notification);
     }
 }
