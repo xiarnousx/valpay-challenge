@@ -2,6 +2,7 @@ import { createTransactionProcessor } from "./TnxFactory/TransactionFactory.js";
 import { validate } from "./Validators/Validate.js";
 import { get as getTransactionItem} from "./Store/Get.js";
 import { insert as insertTransactionItem } from "./Store/Insert.js";
+import { getErrorHandler } from "./Errors/ErrorFactory.js";
 
 export const handler = async function(event, context) {
      const payload = event.body;
@@ -27,7 +28,7 @@ export const handler = async function(event, context) {
       }
       
    } catch(err) {
-      // @TODO handle error
-      console.log(err);
+      const errorHandler = getErrorHandler(err);
+      errorHandler.handle(payload);
    }
 }

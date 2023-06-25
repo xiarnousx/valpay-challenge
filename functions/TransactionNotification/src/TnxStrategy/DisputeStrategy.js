@@ -1,3 +1,4 @@
+import { ConnectionError } from "../Errors/ConnectionError.js";
 
 export class DisputeStrategy 
 {

@@ -3,6 +3,7 @@ import { get as getTransactionItem} from "./Store/Get.js";
 import { insert as insertTransactionItem } from "./Store/Insert.js";
 import { update as updateTransactionItem } from "./Store/Update.js";
 import { createPayout } from "./PayoutFactory/PayoutFactory.js";
+import { getErrorHandler } from "./Errors/ErrorFactory.js";
 
 export const handler = async function(event, context) {
     const payload = event.body;
@@ -30,7 +31,7 @@ export const handler = async function(event, context) {
          }
 
     } catch (err) {
-        // @TODO handle error
-        console.log(err);
+       const errorHandler = getErrorHandler(err);
+       errorHandler.handle(payload);
     }
 }

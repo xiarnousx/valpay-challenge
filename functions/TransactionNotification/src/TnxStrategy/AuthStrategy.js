@@ -1,4 +1,4 @@
-
+import { ConnectionError } from "../Errors/ConnectionError.js";
 export class AuthStrategy 
 {
     process(notification) {
